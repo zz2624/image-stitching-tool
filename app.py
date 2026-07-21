@@ -12,7 +12,6 @@ FALLBACK_FONT = os.path.join(FONT_DIR, "NotoSansSC-Regular.otf")
 @st.cache_resource
 def load_font(size):
     """优先用你上传的微软雅黑，没有就自动下载思源黑体兜底"""
-    # 1. 优先用本地的微软雅黑
     if os.path.exists(LOCAL_FONT):
         try:
             return ImageFont.truetype(LOCAL_FONT, size, index=0)
@@ -22,14 +21,12 @@ def load_font(size):
             except:
                 pass
     
-    # 2. 没有的话用已下载的思源黑体
     if os.path.exists(FALLBACK_FONT):
         try:
             return ImageFont.truetype(FALLBACK_FONT, size)
         except:
             pass
     
-    # 3. 都没有就自动下载思源黑体（只下载一次）
     os.makedirs(FONT_DIR, exist_ok=True)
     try:
         url = "https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf"
@@ -53,6 +50,7 @@ with st.sidebar:
     text_input = st.text_area("输入文字（支持多行）", value="", height=100)
     text_position = st.selectbox("文字位置", options=["顶部", "底部", "左上角", "右上角", "左下角", "右下角", "居中", "logo右侧"], index=0)
     font_size = st.slider("字体大小", min_value=10, max_value=200, value=40, step=1)
+    line_spacing = st.slider("行间距", min_value=0, max_value=100, value=8, step=1)
     text_color = st.color_picker("文字颜色", "#FF0000")
     text_offset_x = st.slider("水平偏移", min_value=-500, max_value=500, value=0, step=1)
     text_offset_y = st.slider("垂直偏移", min_value=-500, max_value=500, value=0, step=1)
@@ -99,7 +97,7 @@ def stitch_images(img_a, img_b, vertical, align, bg):
         canvas.paste(img_b, (img_a.width, 0), img_b)
     return canvas
 
-def add_text_to_image(img, text, position, font_size, color, offset_x, offset_y):
+def add_text_to_image(img, text, position, font_size, color, offset_x, offset_y, line_spacing=8):
     if not text.strip():
         return img
     
@@ -113,7 +111,7 @@ def add_text_to_image(img, text, position, font_size, color, offset_x, offset_y)
         lw.append(bbox[2] - bbox[0])
         lh.append(bbox[3] - bbox[1])
     
-    th = sum(lh) + (len(lines) - 1) * 4
+    th = sum(lh) + (len(lines) - 1) * line_spacing
     mw = max(lw) if lw else 0
     w, h = img.size
     p = 20
@@ -142,7 +140,7 @@ def add_text_to_image(img, text, position, font_size, color, offset_x, offset_y)
         else:
             x = bx + mw - lw[i]
         draw.text((x, cy), line, fill=color, font=font)
-        cy += lh[i] + 4
+        cy += lh[i] + line_spacing
     
     return img
 
@@ -152,7 +150,7 @@ if img1 and img2:
     result = stitch_images(img1, img2, vertical, align_mode, bg_color)
     
     if text_input.strip():
-        result = add_text_to_image(result, text_input, text_position, font_size, text_color, text_offset_x, text_offset_y)
+        result = add_text_to_image(result, text_input, text_position, font_size, text_color, text_offset_x, text_offset_y, line_spacing)
     
     st.image(result, caption=f"拼接结果 — {result.size[0]}×{result.size[1]}", use_container_width=True)
     

@@ -53,35 +53,24 @@ with col2:
 
 def stitch_images(img_a, img_b, vertical, align, bg):
     if vertical:
-        if align == "拉伸填充（完美对齐）":
-            new_w = max(img_a.width, img_b.width)
-            img_a = img_a.resize((new_w, img_a.height), Image.LANCZOS)
-            img_b = img_b.resize((new_w, img_b.height), Image.LANCZOS)
-        else:
-            new_w = max(img_a.width, img_b.width)
+        new_w = img_a.width
+        ratio = new_w / img_b.width
+        img_b = img_b.resize((new_w, int(img_b.height * ratio)), Image.LANCZOS)
         new_h = img_a.height + img_b.height
     else:
-        if align == "拉伸填充（完美对齐）":
-            new_h = max(img_a.height, img_b.height)
-            img_a = img_a.resize((img_a.width, new_h), Image.LANCZOS)
-            img_b = img_b.resize((img_b.width, new_h), Image.LANCZOS)
-        else:
-            new_h = max(img_a.height, img_b.height)
+        new_h = img_a.height
+        ratio = new_h / img_b.height
+        img_b = img_b.resize((int(img_b.width * ratio), new_h), Image.LANCZOS)
         new_w = img_a.width + img_b.width
     canvas = Image.new("RGBA", (new_w, new_h), bg)
     if vertical:
-        if align in ("居中对齐", "拉伸填充（完美对齐）"): x_a, x_b = (new_w - img_a.width) // 2, (new_w - img_b.width) // 2
-        elif align == "左/上对齐": x_a, x_b = 0, 0
-        else: x_a, x_b = new_w - img_a.width, new_w - img_b.width
-        canvas.paste(img_a, (x_a, 0), img_a)
-        canvas.paste(img_b, (x_b, img_a.height), img_b)
+        canvas.paste(img_a, (0, 0), img_a)
+        canvas.paste(img_b, (0, img_a.height), img_b)
     else:
-        if align in ("居中对齐", "拉伸填充（完美对齐）"): y_a, y_b = (new_h - img_a.height) // 2, (new_h - img_b.height) // 2
-        elif align == "左/上对齐": y_a, y_b = 0, 0
-        else: y_a, y_b = new_h - img_a.height, new_h - img_b.height
-        canvas.paste(img_a, (0, y_a), img_a)
-        canvas.paste(img_b, (img_a.width, y_b), img_b)
+        canvas.paste(img_a, (0, 0), img_a)
+        canvas.paste(img_b, (img_a.width, 0), img_b)
     return canvas
+
 
 def add_text_to_image(img, text, position, font_size, color, offset_x, offset_y):
     if not text.strip(): return img

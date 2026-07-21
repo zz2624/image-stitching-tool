@@ -4,7 +4,7 @@ import io, os
 
 st.set_page_config(page_title="图片拼接工具", page_icon="🖼️", layout="wide")
 
-FONT_PATH = os.path.join(os.path.dirname(__file__), "assets", "MSYHBD.TTC")
+FONT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "MSYHBD.TTC")
 
 @st.cache_resource
 def load_font(size):
@@ -75,7 +75,11 @@ def stitch_images(img_a, img_b, vertical, align, bg):
 def add_text_to_image(img, text, position, font_size, color, offset_x, offset_y):
     if not text.strip(): return img
     draw = ImageDraw.Draw(img)
-    font = load_font(font_size)
+    try:
+        font = load_font(font_size)
+    except Exception as e:
+        st.error(f"字体加载失败: {e}")
+        font = ImageFont.load_default()
     lines = text.split("\n")
     lh, lw = [], []
     for line in lines:
@@ -106,7 +110,6 @@ def add_text_to_image(img, text, position, font_size, color, offset_x, offset_y)
         draw.text((x, cy), line, fill=color, font=font)
         cy += lh[i] + 4
     return img
-
 
 if img1 and img2:
     st.divider()

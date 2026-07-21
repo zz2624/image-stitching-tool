@@ -29,7 +29,7 @@ with st.sidebar:
     st.divider()
     st.header("📝 文字设置")
     text_input = st.text_area("输入文字（支持多行）", value="", height=100)
-    text_position = st.selectbox("文字位置", options=["顶部", "底部", "左上角", "右上角", "左下角", "右下角", "居中"], index=0)
+    text_position = st.selectbox("文字位置", options=["顶部", "底部", "左上角", "右上角", "左下角", "右下角", "居中", "logo右侧"], index=0)
     font_size = st.slider("字体大小", min_value=10, max_value=200, value=40, step=1)
     text_color = st.color_picker("文字颜色", "#FF0000")
     text_offset_x = st.slider("水平偏移", min_value=-500, max_value=500, value=0, step=1)
@@ -86,17 +86,27 @@ def add_text_to_image(img, text, position, font_size, color, offset_x, offset_y)
     mw = max(lw) if lw else 0
     w, h = img.size
     p = 20
-    pm = {"顶部": (w // 2, p), "底部": (w // 2, h - th - p), "左上角": (p, p), "右上角": (w - mw - p, p), "左下角": (p, h - th - p), "右下角": (w - mw - p, h - th - p), "居中": (w // 2, h // 2 - th // 2)}
+    pm = {
+        "顶部": (w // 2, p),
+        "底部": (w // 2, h - th - p),
+        "左上角": (p, p),
+        "右上角": (w - mw - p, p),
+        "左下角": (p, h - th - p),
+        "右下角": (w - mw - p, h - th - p),
+        "居中": (w // 2, h // 2 - th // 2),
+        "logo右侧": (w // 2 + 200, h - th - p),
+    }
     bx, by = pm.get(position, (w // 2, p))
     bx += offset_x; by += offset_y
     cy = by
     for i, line in enumerate(lines):
-        if position in ("顶部", "底部", "居中"): x = bx - lw[i] // 2
+        if position in ("顶部", "底部", "居中", "logo右侧"): x = bx - lw[i] // 2
         elif position in ("左上角", "左下角"): x = bx
         else: x = bx + mw - lw[i]
         draw.text((x, cy), line, fill=color, font=font)
         cy += lh[i] + 4
     return img
+
 
 if img1 and img2:
     st.divider()
